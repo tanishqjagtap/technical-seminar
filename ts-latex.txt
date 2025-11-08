@@ -1,0 +1,173 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+\begin{document}
+
+\title{Design and Integration of a Type Narrowing Suggestion System in Clang Compiler}
+
+\author{
+\IEEEauthorblockN{[Author Name]}
+\IEEEauthorblockA{\textit{[Department]} \\
+\textit{[University Name]}\\
+[City, Country] \\
+[email@university.edu]}
+}
+
+\maketitle
+
+\begin{abstract}
+Modern C++ development frequently involves the overuse of wide integer types such as \texttt{int} and \texttt{long} for variables that could safely utilize smaller fixed-width types. This practice results in unnecessary memory consumption and reduced cache efficiency, particularly in resource-constrained environments. While contemporary compilers like Clang provide warnings for unsafe narrowing conversions that risk data loss, they lack mechanisms to suggest safe narrowing opportunities where smaller types would suffice. This paper presents the design and implementation of a compiler-level type narrowing suggestion system integrated into Clang's semantic analysis phase. The system analyzes integer variable initializations, evaluates constant expressions to infer value ranges, and emits diagnostic warnings recommending appropriate fixed-width integer types (\texttt{uint8\_t}, \texttt{int8\_t}, \texttt{uint16\_t}, etc.) when safe narrowing is detected.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Compiler diagnostics, type narrowing, static analysis, Clang, LLVM, semantic analysis
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Compiler type systems serve as critical mechanisms for ensuring both program correctness and resource efficiency. The C++ type system, with its extensive hierarchy of integer types, provides developers with precise control over memory layout and value representation. However, empirical observation of production codebases reveals a systematic pattern of developers defaulting to platform-dependent types (\texttt{int}, \texttt{long}) regardless of the actual value ranges required by their applications.
+
+This conservative typing approach, while safe, introduces quantifiable inefficiencies. A 32-bit integer used to store values constrained to the range [0, 100] wastes 75\% of its allocated space. In aggregate systems processing millions of such values---embedded controllers, high-performance computing clusters, or memory-constrained mobile applications---this inefficiency compounds into substantial resource waste. Furthermore, wider types reduce cache line utilization and increase memory bandwidth requirements, degrading overall system performance.
+
+The Clang compiler currently implements diagnostics for narrowing conversions that may result in data loss, conforming to C++11 standards regarding list initialization. These warnings protect developers from unintentional precision loss during type conversions. However, the inverse problem---identifying opportunities for safe type narrowing---remains unaddressed by mainstream compiler implementations.
+
+\begin{lstlisting}[caption={Inefficient type usage examples}]
+int counter = 20;        // Uses 32 bits
+int status_code = 404;   // Uses 32 bits
+int rgb_component = 255; // Uses 32 bits
+\end{lstlisting}
+
+Each of these declarations could safely utilize \texttt{uint8\_t}, reducing memory footprint by 75\% per variable. Existing static analysis tools such as clang-tidy provide post-compilation analysis capabilities but lack integration with the primary compilation pipeline where such feedback would be most actionable.
+
+This paper proposes a compiler-level type narrowing suggestion mechanism integrated directly into Clang's semantic analysis pipeline. The system leverages Clang's existing constant evaluation infrastructure to perform range analysis on integer initializers and emits actionable diagnostic suggestions when narrower types would safely accommodate the declared values. By positioning this analysis within the compilation phase rather than as external tooling, the approach provides immediate, contextual feedback to developers during their standard development workflow.
+
+\section{Related Work}
+
+\subsection{Clang and Existing Diagnostics}
+
+The LLVM Clang compiler implements comprehensive diagnostic systems for type safety violations. The \texttt{-Wc++11-narrowing} warning flag detects narrowing conversions in list initialization contexts, alerting developers when implicit conversions may lose information. This diagnostic addresses language standard conformance but operates reactively, flagging problematic conversions rather than suggesting improvements.
+
+The clang-tidy static analysis framework extends Clang's diagnostic capabilities through modular checker plugins. The \texttt{cppcoreguidelines-narrowing-conversions} checker identifies potentially unsafe narrowing conversions according to C++ Core Guidelines, while \texttt{bugprone-narrowing-conversions} detects narrowing that may introduce bugs. Both checkers focus on preventing data loss rather than optimizing type choices. Their post-compilation execution model separates analysis from the primary development feedback loop, reducing developer awareness and adoption.
+
+\subsection{Static Analysis and Range Inference}
+
+Commercial static analysis platforms including Coverity and Synopsys demonstrate the feasibility of sophisticated range analysis in production environments. These systems employ abstract interpretation and constraint solving to infer variable value ranges across execution paths. However, their primary objective centers on detecting security vulnerabilities and undefined behavior rather than performance optimization opportunities.
+
+The GCC compiler implements similar narrowing conversion warnings but lacks proactive suggestions for type optimization. Academic work in range analysis, including interval arithmetic and abstract domains, has established theoretical foundations for compile-time value range inference. These techniques typically target optimization passes rather than diagnostic generation, leaving a gap in developer-facing tooling.
+
+\subsection{Research Gap}
+
+Contemporary compiler diagnostics and static analysis tools address type safety through detection of problematic conversions but provide no guidance for optimal type selection. The integration of optimization-oriented suggestions within the primary compilation pipeline remains unexplored in mainstream compiler implementations. Existing research focuses on safety verification or backend optimization rather than surfacing actionable efficiency recommendations during semantic analysis.
+
+This work addresses the identified gap by implementing proactive type narrowing suggestions as first-class compiler diagnostics, leveraging Clang's existing semantic analysis infrastructure to deliver immediate feedback without requiring separate analysis passes or external tooling.
+
+\section{Proposed System / Methodology}
+
+% [To be filled after implementation]
+
+\subsection{System Architecture}
+
+% [To be filled after implementation]
+
+\subsection{Algorithmic Approach}
+
+% [To be filled after implementation]
+
+\subsection{Type Selection Criteria}
+
+% [To be filled after implementation]
+
+\section{Implementation Details}
+
+\subsection{Clang Source Architecture}
+
+% [To be filled after implementation]
+
+\subsection{Integration Points}
+
+% [To be filled after implementation]
+
+\subsection{Diagnostic Emission}
+
+% [To be filled after implementation]
+
+\section{Evaluation Plan}
+
+% [To be filled after implementation]
+
+\subsection{Test Suite Design}
+
+% [To be filled after implementation]
+
+\subsection{Evaluation Metrics}
+
+% [To be filled after implementation]
+
+\subsection{Expected Outcomes}
+
+% [To be filled after implementation]
+
+\section{Results and Discussion}
+
+% [To be filled after implementation]
+
+\section{Conclusion and Future Work}
+
+This paper presents the design of a compiler-level diagnostic enhancement that suggests narrower integer types based on constant value inference. By integrating the system directly into Clang's semantic analysis, we demonstrate a new approach to proactive, optimization-oriented compiler feedback. The proposed mechanism addresses a gap in existing compiler diagnostics by providing actionable suggestions for type optimization rather than solely focusing on safety violations.
+
+The integration within the semantic analysis phase ensures that feedback is delivered immediately during compilation, making optimization suggestions as accessible as traditional error and warning messages. This approach contrasts with external static analysis tools that require separate execution and may be overlooked in standard development workflows.
+
+Future work includes extending value range inference to non-constant expressions through dataflow analysis, implementing interprocedural analysis for function parameters and return types, and integration with clang-tidy for broader adoption and automated refactoring capabilities. Additional research directions encompass machine learning approaches to predict when narrowing suggestions are likely to be adopted, reducing warning noise while maintaining high detection accuracy for actionable optimization opportunities.
+
+\begin{thebibliography}{9}
+
+\bibitem{llvm}
+LLVM Project, ``Clang-Tidy Documentation,'' LLVM 17, 2024. [Online]. Available: https://clang.llvm.org/extra/clang-tidy/
+
+\bibitem{cpp_standard}
+ISO/IEC 14882:2020(E), ``Programming Languages --- C++,'' International Organization for Standardization, 2020.
+
+\bibitem{coverity}
+Synopsys, ``Coverity Static Analysis,'' 2024. [Online]. Available: https://www.synopsys.com/software-integrity/security-testing/static-analysis-sast.html
+
+\bibitem{cpp_guidelines}
+``cppcoreguidelines-narrowing-conversions --- Clang-Tidy Checks,'' LLVM Documentation. [Online]. Available: https://clang.llvm.org/extra/clang-tidy/checks/
+
+\bibitem{lattner}
+C. Lattner and V. Adve, ``LLVM: A Compilation Framework for Lifelong Program Analysis \& Transformation,'' in \textit{Proceedings of the International Symposium on Code Generation and Optimization}, 2004, pp. 75--86.
+
+\bibitem{clang_docs}
+LLVM Project, ``Clang Compiler User's Manual,'' 2024. [Online]. Available: https://clang.llvm.org/docs/
+
+\bibitem{abstract_interpretation}
+P. Cousot and R. Cousot, ``Abstract interpretation: a unified lattice model for static analysis of programs by construction or approximation of fixpoints,'' in \textit{Proceedings of the 4th ACM SIGACT-SIGPLAN symposium on Principles of programming languages}, 1977, pp. 238--252.
+
+\bibitem{range_analysis}
+M. Stephenson, J. Babb, and S. Amarasinghe, ``Bidwidth analysis with application to silicon compilation,'' in \textit{ACM SIGPLAN Notices}, vol. 35, no. 5, 2000, pp. 108--120.
+
+\bibitem{gcc_warnings}
+Free Software Foundation, ``GCC Warning Options,'' GNU Compiler Collection Documentation, 2024. [Online]. Available: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+
+\end{thebibliography}
+
+\end{document}

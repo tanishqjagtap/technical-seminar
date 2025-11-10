@@ -23,7 +23,7 @@
 
 \begin{document}
 
-\title{Design and Integration of a Type Narrowing Suggestion System in Clang Compiler Fuck this bitch}
+\title{Design and Integration of a Type Narrowing Suggestion System in Clang Compiler Fuck this beach}
 
 \author{
 \IEEEauthorblockN{[Author Name]}
